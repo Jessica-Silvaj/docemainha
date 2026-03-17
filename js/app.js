@@ -20,6 +20,8 @@ cardapio.eventos = {
         cardapio.metodos.carregarBotaoLigar();
         cardapio.metodos.carregarBotaoReserva();
         cardapio.metodos.configurarBuscaAutomaticaCep();
+        cardapio.metodos.atualizarStatusAtendimento();
+        setInterval(cardapio.metodos.atualizarStatusAtendimento, 60000);
     }
 
 }
@@ -471,9 +473,16 @@ cardapio.metodos = {
         let uf = $("#ddlUf").val().trim();
         let numero = $("#txtNumero").val().trim();
         let complemento = $("#txtComplemento").val().trim();
+        let cepNumerico = cep.replace(/\D/g, '');
 
         if (cep.length <= 0) {
             cardapio.metodos.mensagem('Informe o CEP, por favor.');
+            $("#txtCEP").focus();
+            return;
+        }
+
+        if (!/^\d{8}$/.test(cepNumerico)) {
+            cardapio.metodos.mensagem('CEP inválido. Use o formato 00000-000.');
             $("#txtCEP").focus();
             return;
         }
@@ -508,8 +517,14 @@ cardapio.metodos = {
             return;
         }
 
+        if (!/^\d+[A-Za-z]?$/.test(numero)) {
+            cardapio.metodos.mensagem('Número inválido. Use apenas números (ex: 120 ou 120A).');
+            $("#txtNumero").focus();
+            return;
+        }
+
         MEU_ENDERECO = {
-            cep: cep,
+            cep: cepNumerico,
             endereco: endereco,
             bairro: bairro,
             cidade: cidade,
@@ -595,6 +610,43 @@ cardapio.metodos = {
 
     },
 
+    // mostra status dinâmico de atendimento (aberto/fechado)
+    atualizarStatusAtendimento: () => {
+
+        const agora = new Date();
+        const dia = agora.getDay(); // 0 domingo ... 6 sábado
+        const minutos = (agora.getHours() * 60) + agora.getMinutes();
+
+        let inicio = 0;
+        let fim = 0;
+
+        if (dia >= 1 && dia <= 5) {
+            inicio = 8 * 60;
+            fim = 19 * 60;
+        } else if (dia == 6) {
+            inicio = 9 * 60;
+            fim = 17 * 60;
+        } else {
+            inicio = 9 * 60;
+            fim = 13 * 60;
+        }
+
+        const aberto = minutos >= inicio && minutos < fim;
+
+        if (aberto) {
+            $("#statusAtendimento")
+                .removeClass('fechado')
+                .addClass('aberto')
+                .html('<span class="status-dot" aria-hidden="true"></span>Aberto agora · Atendimento em andamento');
+        } else {
+            $("#statusAtendimento")
+                .removeClass('aberto')
+                .addClass('fechado')
+                .html('<span class="status-dot" aria-hidden="true"></span>Fechado agora · Recebemos encomendas para o próximo horário');
+        }
+
+    },
+
     // carrega o botão de ligar
     carregarBotaoLigar: () => {
 
@@ -645,7 +697,7 @@ cardapio.templates = {
         <div class="col-12 col-lg-3 col-md-3 col-sm-6 mb-5 animated fadeInUp">
             <div class="card card-item" id="\${id}">
                 <div class="img-produto">
-                    <img src="\${img}" />
+                    <img src="\${img}" alt="\${nome}" loading="lazy" decoding="async" />
                 </div>
                 <p class="title-produto text-center mt-4">
                     <b>\${nome}</b>
@@ -666,7 +718,7 @@ cardapio.templates = {
     itemCarrinho: `
         <div class="col-12 item-carrinho">
             <div class="img-produto">
-                <img src="\${img}" />
+                <img src="\${img}" alt="\${nome}" loading="lazy" decoding="async" />
             </div>
             <div class="dados-produto">
                 <p class="title-produto"><b>\${nome}</b></p>
@@ -684,7 +736,7 @@ cardapio.templates = {
     itemResumo: `
         <div class="col-12 item-carrinho resumo">
             <div class="img-produto-resumo">
-                <img src="\${img}" />
+                <img src="\${img}" alt="\${nome}" loading="lazy" decoding="async" />
             </div>
             <div class="dados-produto">
                 <p class="title-produto-resumo">

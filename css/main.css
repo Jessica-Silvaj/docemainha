@@ -31,6 +31,16 @@ html, body {
     color: var(--color-text);
 }
 
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(86, 9, 31, 0.2);
+}
+
 b {
     font-family: 'PoppinsMedium', 'Rubik', sans-serif;
 }
@@ -592,8 +602,43 @@ a.navbar-brand {
 
 .horario-observacao {
     margin-top: 18px;
-    color: #7a5a67;
+    color: #5d3443;
     font-size: 15px;
+}
+
+.status-atendimento {
+    margin-top: -8px;
+    margin-bottom: 12px;
+    color: #5d3443;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #999;
+}
+
+.status-atendimento.aberto {
+    color: #17643b;
+}
+
+.status-atendimento.aberto .status-dot {
+    background-color: #2ecc71;
+    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.2);
+}
+
+.status-atendimento.fechado {
+    color: #7a2436;
+}
+
+.status-atendimento.fechado .status-dot {
+    background-color: #e74c3c;
+    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.2);
 }
 
 footer {
@@ -800,8 +845,8 @@ select.form-control {
 }
 
 #cepInfo {
-    font-size: 13px;
-    color: #8a7a82;
+    font-size: 14px;
+    color: #6a3b4a;
 }
 
 .img-produto-resumo img {
