@@ -179,8 +179,20 @@
         padding-bottom: 50px;
     }
 
+    .encomenda::after {
+        opacity: 0.2;
+        background-size: 30px, 48px, 62px, 38px, 54px;
+        background-position: 2% 18%, 18% 90%, 50% 10%, 82% 88%, 97% 18%;
+    }
+
     .horario {
         padding-bottom: 60px;
+    }
+
+    .horario::after {
+        opacity: 0.18;
+        background-size: 34px, 48px, 58px, 50px, 38px;
+        background-position: 2% 24%, 96% 20%, 86% 88%, 7% 88%, 48% 10%;
     }
 
     .horario-card {
