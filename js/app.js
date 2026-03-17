@@ -20,6 +20,7 @@ cardapio.eventos = {
         cardapio.metodos.carregarBotaoLigar();
         cardapio.metodos.carregarBotaoReserva();
         cardapio.metodos.configurarBuscaAutomaticaCep();
+        cardapio.metodos.configurarValidacaoInlineEndereco();
         cardapio.metodos.atualizarStatusAtendimento();
         setInterval(cardapio.metodos.atualizarStatusAtendimento, 60000);
     }
@@ -27,6 +28,58 @@ cardapio.eventos = {
 }
 
 cardapio.metodos = {
+
+    // exibe erro inline em campo específico
+    setErroCampo: (campo, mensagem) => {
+
+        const mapa = {
+            cep: '#txtCEP',
+            numero: '#txtNumero',
+            uf: '#ddlUf'
+        };
+
+        $("#erro-" + campo).text(mensagem);
+        $(mapa[campo]).addClass('campo-invalido').attr('aria-invalid', 'true');
+
+    },
+
+    // remove erro inline de um campo
+    limparErroCampo: (campo) => {
+
+        const mapa = {
+            cep: '#txtCEP',
+            numero: '#txtNumero',
+            uf: '#ddlUf'
+        };
+
+        $("#erro-" + campo).text('');
+        $(mapa[campo]).removeClass('campo-invalido').removeAttr('aria-invalid');
+
+    },
+
+    // remove todos os erros inline do endereço
+    limparErrosEndereco: () => {
+        cardapio.metodos.limparErroCampo('cep');
+        cardapio.metodos.limparErroCampo('numero');
+        cardapio.metodos.limparErroCampo('uf');
+    },
+
+    // limpa erros inline conforme usuário corrige os campos
+    configurarValidacaoInlineEndereco: () => {
+
+        $(document).on('input', '#txtCEP', function () {
+            cardapio.metodos.limparErroCampo('cep');
+        });
+
+        $(document).on('input', '#txtNumero', function () {
+            cardapio.metodos.limparErroCampo('numero');
+        });
+
+        $(document).on('change', '#ddlUf', function () {
+            cardapio.metodos.limparErroCampo('uf');
+        });
+
+    },
 
     // obtem a lista de itens do cardápio
     obterItensCardapio: (categoria = 'doces', vermais = false) => {
@@ -430,11 +483,13 @@ cardapio.metodos = {
                         $("#txtCidade").val(dados.localidade);
                         $("#ddlUf").val(dados.uf);
                         $("#cepInfo").text('Endereço preenchido automaticamente.');
+                        cardapio.metodos.limparErroCampo('cep');
                         $("#txtNumero").focus();
 
                     }
                     else {
                         $("#cepInfo").text('CEP não encontrado. Preencha o endereço manualmente.');
+                        cardapio.metodos.setErroCampo('cep', 'CEP não encontrado.');
                         if (!silencioso) {
                             cardapio.metodos.mensagem('CEP não encontrado. Preencha as informações manualmente.');
                         }
@@ -449,6 +504,7 @@ cardapio.metodos = {
                     cardapio.metodos.mensagem('Formato do CEP inválido.');
                 }
                 $("#cepInfo").text('Formato inválido. Use 8 números no CEP.');
+                cardapio.metodos.setErroCampo('cep', 'Formato inválido. Use 00000-000.');
                 $("#txtCEP").focus();
             }
 
@@ -458,6 +514,7 @@ cardapio.metodos = {
                 cardapio.metodos.mensagem('Informe o CEP, por favor.');
             }
             $("#cepInfo").text('Digite o CEP com 8 números para buscar automaticamente.');
+            cardapio.metodos.setErroCampo('cep', 'Informe o CEP para continuar.');
             $("#txtCEP").focus();
         }
 
@@ -475,14 +532,18 @@ cardapio.metodos = {
         let complemento = $("#txtComplemento").val().trim();
         let cepNumerico = cep.replace(/\D/g, '');
 
+        cardapio.metodos.limparErrosEndereco();
+
         if (cep.length <= 0) {
             cardapio.metodos.mensagem('Informe o CEP, por favor.');
+            cardapio.metodos.setErroCampo('cep', 'Informe o CEP para continuar.');
             $("#txtCEP").focus();
             return;
         }
 
         if (!/^\d{8}$/.test(cepNumerico)) {
             cardapio.metodos.mensagem('CEP inválido. Use o formato 00000-000.');
+            cardapio.metodos.setErroCampo('cep', 'CEP inválido. Use 00000-000.');
             $("#txtCEP").focus();
             return;
         }
@@ -507,18 +568,21 @@ cardapio.metodos = {
 
         if (uf == "-1") {
             cardapio.metodos.mensagem('Informe a UF, por favor.');
+            cardapio.metodos.setErroCampo('uf', 'Selecione a UF.');
             $("#ddlUf").focus();
             return;
         }
 
         if (numero.length <= 0) {
             cardapio.metodos.mensagem('Informe o Número, por favor.');
+            cardapio.metodos.setErroCampo('numero', 'Informe o número do endereço.');
             $("#txtNumero").focus();
             return;
         }
 
         if (!/^\d+[A-Za-z]?$/.test(numero)) {
             cardapio.metodos.mensagem('Número inválido. Use apenas números (ex: 120 ou 120A).');
+            cardapio.metodos.setErroCampo('numero', 'Número inválido (ex: 120 ou 120A).');
             $("#txtNumero").focus();
             return;
         }
